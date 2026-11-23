@@ -3,6 +3,8 @@
 #
 # ONE script for Linux, macOS and Windows — OpenCode-style:
 #
+#   curl -fsSL https://htpl.hvcrealm.com/install | sh
+#   # Alternate (same script, straight from the repo):
 #   curl -fsSL https://raw.githubusercontent.com/HTPLorg/htpl/main/install.sh | sh
 #   # or, after downloading:
 #   sh install.sh
