@@ -97,15 +97,14 @@ Other commands: `htpl check`, `htpl fmt`, `htpl test`, `htpl repl`,
 
 ## Links
 
-- **Website** — https://htpl.hvcrealm.com — **not deployed yet**.
-  The site is built; going live is still pending.
+- **Website** — https://htpl.hvcrealm.com — **live**.
 - **Registry** — https://registry.htpl.hvcrealm.com — the static
   registry index. It is index-only and **empty until the first
   sync**; no gadgets are listed there yet.
 - **Registry dashboard** — https://app.registry.htpl.hvcrealm.com —
   **live**. This is where gadget publishers register.
-- **Playground** — runs on the website once it is deployed; not
-  live yet.
+- **Playground** — on the website; runs code in the browser via
+  WebAssembly, no install needed.
 
 ## Known limits
 
