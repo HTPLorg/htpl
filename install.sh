@@ -19,18 +19,21 @@
 # Installs the prebuilt `htpl` binary for your OS/arch into ~/.local/bin
 # (override with --prefix / --install-dir, or INSTALL_DIR).
 #
-# The release: v1.1.0 on GitHub (HTPLorg/htpl). NOTE: the release tag is
-# 1.1.0 but the binary inside it prints `htpl 1.0.0` — the tag and the
-# binary's own version string differ; that is the state of the release,
-# not an installer error.
+# The release: v1.2.0 on GitHub (HTPLorg/htpl). The release tag is
+# 1.2.0 and the binary inside it prints `htpl 1.2.0` — tag and binary
+# agree from this release on (v1.1.0's binary printed 1.0.0; that
+# mismatch is history, not the state of this release).
 #
 # Environment variables:
 #   HTPL_INSTALL_BASE   Base URL (or file:// path) holding the release files.
 #                       Default: https://github.com/HTPLorg/htpl/releases/download/v$HTPL_VERSION
-#   HTPL_VERSION        Release version to install (default: 1.1.0).
-#                       The checksums embedded below cover v1.1.0 only; to
-#                       install another version, point HTPL_INSTALL_BASE at
-#                       a mirror that publishes a SHA256SUMS file.
+#   HTPL_VERSION        Release version to install (default: 1.2.0).
+#                       The checksums embedded below cover v1.2.0 (and
+#                       v1.1.0 as a fallback); the v1.2.0 release also
+#                       publishes a SHA256SUMS file, which the installer
+#                       prefers. To install another version, point
+#                       HTPL_INSTALL_BASE at a mirror that publishes a
+#                       SHA256SUMS file.
 #   INSTALL_DIR         Install directory (same as --prefix; flag wins).
 #
 # Files expected at $HTPL_INSTALL_BASE (one zip per platform):
@@ -41,10 +44,11 @@
 # fail honestly, naming the missing asset, instead of installing the
 # wrong thing.
 #
-# Checksums: the v1.1.0 release publishes no SHA256SUMS file, so the
-# installer verifies each zip against a SHA-256 embedded below (computed
-# from the published v1.1.0 assets). A mirror that publishes SHA256SUMS
-# is honoured instead when one is present at the base URL.
+# Checksums: the v1.2.0 release publishes a SHA256SUMS file, which the
+# installer prefers (see below). The SHA-256 values embedded here cover
+# v1.2.0 and v1.1.0 as a fallback for a base URL without one. A mirror
+# that publishes SHA256SUMS is honoured instead when one is present at
+# the base URL.
 #
 # Requirements at install time: curl or wget, sha256sum (or shasum -a 256
 # on macOS), unzip, and standard coreutils. No npm, cargo, or python
@@ -58,7 +62,7 @@
 set -eu
 
 PROG="install.sh"
-VERSION="${HTPL_VERSION:-1.1.0}"
+VERSION="${HTPL_VERSION:-1.2.0}"
 BASE="${HTPL_INSTALL_BASE:-https://github.com/HTPLorg/htpl/releases/download/v$VERSION}"
 INSTALL_DIR="${INSTALL_DIR:-$HOME/.local/bin}"
 DRY_RUN=0
@@ -82,12 +86,13 @@ Options:
 
 Environment variables:
   HTPL_INSTALL_BASE       Release base URL (or file:// directory).
-  HTPL_VERSION            Release version to install (default: 1.1.0).
+  HTPL_VERSION            Release version to install (default: 1.2.0).
   INSTALL_DIR             Install directory (default: \$HOME/.local/bin).
 
 The installer downloads the zip for your platform, verifies its SHA-256
-checksum (embedded for v1.1.0, or from SHA256SUMS when the base URL
-publishes one), extracts the binary and installs it as
+checksum (embedded for v1.2.0 and v1.1.0, or from SHA256SUMS when the
+base URL publishes one — the v1.2.0 release publishes SHA256SUMS),
+extracts the binary and installs it as
 <install-dir>/htpl (htpl.exe on Windows). A checksum mismatch or an
 unreachable base aborts with a non-zero exit and installs nothing.
 
@@ -174,15 +179,23 @@ else
 fi
 command -v unzip >/dev/null 2>&1 || die "need unzip to extract the release zip (not found in PATH)"
 
-# --- checksums embedded for the published v1.1.0 assets --------------------
+# --- checksums embedded for the published v1.2.0 assets (v1.1.0 kept) ---
 # Computed from the release files at
-# https://github.com/HTPLorg/htpl/releases/download/v1.1.0/
-# (the release publishes no SHA256SUMS file).
+# https://github.com/HTPLorg/htpl/releases/download/v1.2.0/
+# (the v1.2.0 release also publishes a SHA256SUMS file, which the
+# installer prefers; the embedded values are the fallback for a base
+# URL without one. The v1.1.0 values are kept so an explicit
+# HTPL_VERSION=1.1.0 install still verifies.)
 embedded_sha256() {
-    case "$1" in
-        htpl-linux-x86_64.zip)   printf '%s' "d8345e0e75f149cf557c71ed4b760cb9d195931b34c5e4e214156ebc97a36ae2" ;;
-        htpl-macos-arm64.zip)    printf '%s' "53f79d4a8911150375f375c1ca8ac2d4149e18ad6b7888f52ec5409b32b1dcbc" ;;
-        htpl-windows-x86_64.zip) printf '%s' "20dcdd62fbbfc3909e89a7e3cb6185635c90572818ee1a25d2bdc2f34a4e360b" ;;
+    # $1 = asset name. Returns the embedded SHA-256 for the asset at
+    # $VERSION, or "" when no embedded hash covers that version.
+    case "$VERSION:$1" in
+        1.2.0:htpl-linux-x86_64.zip)   printf '%s' "896a6853c929713876cdba5b35fce9319f1f4a5e501b394341cb77ff7cbee0ed" ;;
+        1.2.0:htpl-macos-arm64.zip)    printf '%s' "906c883b09cacfe95db106f0949468b5c71fe1ef450d6b2cf67e137fc219844f" ;;
+        1.2.0:htpl-windows-x86_64.zip) printf '%s' "fd1d6b70b931dd534f656b321e537e5783c991d6d42f9718d856642e692242b4" ;;
+        1.1.0:htpl-linux-x86_64.zip)   printf '%s' "d8345e0e75f149cf557c71ed4b760cb9d195931b34c5e4e214156ebc97a36ae2" ;;
+        1.1.0:htpl-macos-arm64.zip)    printf '%s' "53f79d4a8911150375f375c1ca8ac2d4149e18ad6b7888f52ec5409b32b1dcbc" ;;
+        1.1.0:htpl-windows-x86_64.zip) printf '%s' "20dcdd62fbbfc3909e89a7e3cb6185635c90572818ee1a25d2bdc2f34a4e360b" ;;
         *) printf '%s' "" ;;
     esac
 }
@@ -221,7 +234,8 @@ fi
 
 # --- checksum verification --------------------------------------------------
 # Prefer a SHA256SUMS file at the base when one exists (mirrors / other
-# versions); otherwise use the checksum embedded above for v1.1.0.
+# versions); otherwise use the checksum embedded above for $VERSION
+# (v1.2.0 and v1.1.0 are embedded).
 EXPECTED=""
 SUMS_SOURCE=""
 if download "$BASE/SHA256SUMS" "$SUMS_PATH" 2>/dev/null; then
@@ -230,16 +244,16 @@ if download "$BASE/SHA256SUMS" "$SUMS_PATH" 2>/dev/null; then
 fi
 if [ -z "$EXPECTED" ]; then
     EXPECTED="$(embedded_sha256 "$ASSET")"
-    SUMS_SOURCE="embedded checksum (v1.1.0 release)"
+    SUMS_SOURCE="embedded checksum (v$VERSION release)"
 fi
 if [ -z "$EXPECTED" ]; then
     rm -f "$ZIP_PATH"
-    die "checksum verification failed: no checksum available for $ASSET — the embedded checksums cover v1.1.0 only; to install another version, point HTPL_INSTALL_BASE at a mirror that publishes SHA256SUMS"
+    die "checksum verification failed: no checksum available for $ASSET — the embedded checksums cover v1.2.0 and v1.1.0 only; to install another version, point HTPL_INSTALL_BASE at a mirror that publishes SHA256SUMS"
 fi
 ACTUAL="$($HASHER "$ZIP_PATH" | awk '{ print $1 }')"
 if [ "$ACTUAL" != "$EXPECTED" ]; then
     rm -f "$ZIP_PATH"
-    die "checksum mismatch for $ASSET: expected $EXPECTED, got $ACTUAL — refusing to install (bad download deleted). If you are installing a version other than v1.1.0, point HTPL_INSTALL_BASE at a mirror that publishes SHA256SUMS"
+    die "checksum mismatch for $ASSET: expected $EXPECTED, got $ACTUAL — refusing to install (bad download deleted). If you are installing a version other than v1.2.0 or v1.1.0, point HTPL_INSTALL_BASE at a mirror that publishes SHA256SUMS"
 fi
 say "checksum OK ($ASSET matches $SUMS_SOURCE)"
 
